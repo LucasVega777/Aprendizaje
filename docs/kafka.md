@@ -1,4 +1,5 @@
 # Apache Kafka
+![Logo Kafka](/img/kafka.png "Logo Kafka")
 
 ## Introduccion
 

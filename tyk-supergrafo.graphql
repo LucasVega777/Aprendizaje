@@ -1,0 +1,905 @@
+type Mutation {
+  vendedor(idVendedor: String!): Vendedor,
+  enviarNotificaciones(input: NotificarInput!): String!
+  finalizarRegistroVendedor(clave: String!, dispositivo: DispositivoInput!): Vendedor!
+  generarUrlComprobante(idTransaccion: String!): JSON!
+  habilitarOperador(input: HabilitarOperador!): Respuesta!
+  insertarCategoria(categoria: CategoriaInput!): ID! 
+  insertarContenido(input: ContenidoInput!): String! 
+  insertarFacturador(facturador: FacturadorInput!): ID!
+  insertarOperador(input: NuevoOperadorInput!): Respuesta! 
+  insertarServicio(comision: ComisionInput!, servicio: ServicioInput!): ID!
+  login(clave: String!, idDispositivo: String, idTipoDocumento: TipoDocumentoHabilitado!, nroDocumento: String!, sistema: TipoSistema!): Token! 
+  logout(token: JWT!): String!
+  modificarContenido(input: ModificarContenidoInput!): String!
+  modificarDeclaracion(
+    """Comentario sobre la modificacion"""
+    comentario: String
+
+    """Estado final de la transicion de estados."""
+    estadoFinal: EstadoDeclaracion!
+
+    """Identificador del vendedor."""
+    idVendedor: ID!
+  ): String! 
+
+  modificarEstadoCuentaVendedor(estadoCuenta: EstadoCuentaInput!): CuentaVendedor! 
+
+  modificarEstadoKYCVendedor(estadoKYC: EstadoKYCInput!): KYCVendedor! 
+
+  modificarFactura(idFactura: Int!, modificacion: ModificacionEnFactura!, nroDocumento: String): ModificacionFactura! 
+
+  """Encargada de modificar un operador."""
+  modificarOperador(input: ModificarOperadorInput!): Respuesta! 
+
+  """Modificacion del perfil del vendedor."""
+  modificarPerfil(modificarPerfil: ModificarPerfilInput!): DatosDePerfilActualizado! 
+
+  """
+  Recurso encargado de modificar una regla asociada a un contenido para notificaciones BOMO
+  """
+  modificarRegla(input: ReglaInput!): String! 
+
+  """Realiza la notificación al vendedor."""
+  notificarVendedor(
+    """Motivo de bloqueo de la cuenta del vendedor."""
+    motivo: EstadoCuenta = BLOQUEO_FACTURA
+  ): String! 
+  """Recurso utlizado cuando el operador BO olvida su contraseña"""
+  olvideMiClaveOperador(nroDocumento: String!): ChangedPassword! 
+
+  """Recarga el saldo de un vendedor."""
+  recargaSaldo(documento: String!, idTransaccion: String!, monto: Float!, tipoDocumento: TipoDocumentoHabilitado!): RecargaSaldo 
+
+  recibirCopiaComprobante(copiaComprobante: Boolean!, idVendedor: ID!): Vendedor! @join__field(graph: SERVICIOS)
+
+  """Funcion que reenvia SMS con el codigo de confirmacion totp."""
+  reenvioSMS(
+    """Numero de telefono del Vendedor."""
+    telefono: PhoneNumber!
+  ): PhoneNumber! 
+
+  """Refresco de tokens"""
+  refreshToken(token: JWT!): JWT! @join__field(graph: SEGURIDAD)
+
+  registrarDatosAdicionales(datosAdicionales: DatosAdicionalesInput!, dispositivo: DispositivoInput!): DatosAdicionales! @join__field(graph: APP)
+
+  """Registra token."""
+  registrarTokenFirebase(input: RegistrarToken!): String! 
+  servicio(formulario: FormularioInput!): Documento! @join__field(graph: SERVICIOS)
+  subirDeclaracionIva(
+
+    idOperador: ID
+
+    """Identificador del vendedor."""
+    idVendedor: ID!
+
+    primeraDeclaracion: String!
+
+    segundaDeclaracion: String!
+
+    terceraDeclaracion: String!
+
+    tipoArchivo: TipoArchivo = DECLARACION_IVA
+
+    tipoImagen: TipoImagen = DECLARACION_IVA
+  ): String! @join__field(graph: APP)
+
+  subirImagenAlGCS(stringBase64: String!, tipoArchivo: TipoArchivo = PUBLIC): JSON! 
+
+  transferirSaldoWally(formularioWally: FormularioServicioEspecialInput!): Documento! @join__field(graph: SERVICIOS)
+  validarDatosPersona(dispositivo: DispositivoInput!, nroDocumento: String!): Boolean! @join__field(graph: APP)
+
+  validarPersona(
+    dispositivo: DispositivoInput!
+
+    imagen: String!
+  ): ValidacionPersona! @join__field(graph: APP)
+
+  vincularBilletera(
+    extensiones: JSON!
+
+    idVendedor: Int!
+
+    telefono: PhoneNumber!
+  ): String! @join__field(graph: APP)
+}
+
+type Query {
+  default: String
+}
+
+  
+  
+  
+
+
+ 
+
+  
+  
+
+
+
+ 
+  
+
+  
+  
+
+
+
+input NotificarInput {
+  idContenido: ID!
+  idProducto: String!
+}
+
+input NuevoOperadorInput {
+  apellidos: String!
+  correo: EmailAddress!
+  nombres: String!
+  nroDocumento: String!
+  rol: String!
+}
+
+type Operador {
+  apellidos: String!
+  correo: EmailAddress!
+  documento: String!
+  fechaInsercion: DateTime!
+  habilitado: Boolean!
+  id: ID!
+  nombres: String!
+  rol: String!
+}
+
+type Pais {
+  """Departamentos"""
+  departamentos: [Departamento!]!
+
+  """Denominación"""
+  descripcion: String!
+
+  """Identificador unico"""
+  id: ID!
+
+  """Codigo según ISO Alfa 2"""
+  isoAlfa2: String!
+
+  """Nombre de la nacionalidad"""
+  nacionalidad: String!
+}
+
+"""Parametro almacenado en MongoDB"""
+type Parametro {
+  """Detalle sobre el parámetro"""
+  descripcion: String!
+
+  """Identificador"""
+  nombre: String!
+
+  """Valor del parámetro. Puede ser un objeto JSON parseable"""
+  valor: String!
+}
+
+scalar PhoneNumber
+
+enum PorcentajeIva {
+  """Porcentajes correspondientes al IVA de la factura."""
+  CERO
+  CINCO
+  DIEZ
+}
+
+type PuntoBoca {
+  """Nombre de la boca"""
+  descripcion: String!
+
+  """Direccion especifica del punto de la boca."""
+  direccion: String!
+
+  """Identificador unico del Punto de la Boca."""
+  id: ID!
+
+  """Coordenadas en latitud."""
+  latitud: String!
+
+  """Coordenadas en Longitud."""
+  longitud: String!
+
+  """
+  Descripcion de la ubicacion del punto de entrega de
+  la factura.
+  """
+  ubicacion: String!
+}
+
+type Query {
+  """Listado de actividades económicas"""
+  actividadesEconomicas: [ActividadEconomica!]! @join__field(graph: APP)
+
+  """Consulta a Wally para obtener los datos desde Wally."""
+  billeteraWally(nroDocumento: String!): ValidacionBilleteraWally! @join__field(graph: APP)
+
+  """
+  Listado de categorías.
+  Aplica directiva de autorizacion multiple para APP y BO.
+  """
+  categorias: [Categoria!]! @join__field(graph: SERVICIOS)
+
+  """Comisiones diarias del vendedor."""
+  cierreDiario(fecha: Date): String! 
+
+  """Cierre mensual para generar factura al vendedor."""
+  cierreMensual(
+    """Descripcion del concepto."""
+    conceptoFactura: String
+
+    condicionVenta: CondicionVenta = CONTADO
+
+    """Descripcion de la moneda"""
+    monedaDescripcion: TipoMoneda = PYG
+
+    periodoFacturacion: Date
+
+    """Recibe el porcentaje de iva que por defecto es 10."""
+    porcentajeIva: PorcentajeIva = DIEZ
+
+    """Recibe el RUC del contribuyente."""
+    rucContribuyente: String = "80021756-0"
+  ): String! 
+
+  """Query que obtiene los colores definidos."""
+  colores(idColor: ID): [Color!]! @join__field(graph: SERVICIOS)
+
+  """Query para obtener las comisiones diarias de un vendedor."""
+  comisionesDiarias(fechaFin: Date!, fechaInicio: Date!, idVendedor: ID!): [ComisionTotalDiaria] 
+
+  """Sumatoria total del detalle de saldo diario y mensual de un vendedor."""
+  detalleDiarioMensual(idVendedor: Int, tipoMovimiento: TipoMovimiento!): [DetallesDiarioMensual!]! @join__field(graph: APP)
+
+  """Detalle del saldo de un vendedor"""
+  detalleSaldo(idVendedor: Int): DetalleSaldo! @join__field(graph: APP)
+
+  """Query para obtener los movimientos de un vendedor y exportar en pdf."""
+  exportarMovimientos(fechaFin: Date!, fechaInicio: Date!, idVendedor: ID!): [MovimVendedorExportar] 
+
+  facturadores: [Facturador!]! @join__field(graph: SERVICIOS)
+
+  facturas(
+    """Identificador del vendedor"""
+    idVendedor: Int
+
+    """Número de documento del vendedor"""
+    nroDocumento: String
+  ): [Factura!]! 
+
+  faqs: [FAQ!]! @join__field(graph: APP)
+
+  formularioTransferenciaWally(tipoEspecial: TipoEspecial!): Formulario! @join__field(graph: SERVICIOS)
+
+  generarServiciosFavoritos: String! 
+
+  """Obtiene el contenido para una notificacion por medio del ID"""
+  getContenidoById(idContenido: ID!): Contenido 
+
+  """Obtiene contenidos de las notificaciones."""
+  getContenidos(producto: String!): [Contenido!] 
+
+  """Obtiene las reglas de las nontificaciones"""
+  getReglaById(idRegla: ID!): Regla 
+
+  """Query que obtiene los iconos definidos."""
+  iconos(idIcono: ID): [Icono!]! @join__field(graph: SERVICIOS)
+
+  """Obtiene el mensaje de comprobante."""
+  mensajeComprobante: String! @join__field(graph: SERVICIOS)
+
+  """Obtiene detalle de los movimientos de un vendedor."""
+  movimientos(
+    """Tipo de actividad, por defecto es VENTA"""
+    actividad: Actividad = VENTA
+
+    """Fecha fin. Formato YYYY-MM-DD"""
+    fechaFin: Date
+
+    """Fecha de inicio. Formato YYYY-MM-DD"""
+    fechaInicio: Date
+
+    """Identificador del servicio propio de la APP."""
+    idServicio: Int
+
+    """Identificador del vendedor"""
+    idVendedor: Int!
+  ): [Movimiento!]! 
+
+  obtenerInformeDetallado(idVendedor: String!): String! @join__field(graph: APP)
+
+  obtenerUrlComprobanteVenta(
+    """Identificador del comprobante en base de datos."""
+    idComprobante: ID!
+
+    """Identificador del detalle de la transacción."""
+    idDetalle: ID!
+  ): JSON! @join__field(graph: SERVICIOS)
+
+  """Obtiene todos los operadores."""
+  operadores: [Operador!]! 
+
+
+  puntosEntregaFactura: [PuntoBoca!]! @join__field(graph: APP)
+
+  servicio(id: Int!): Formulario! @join__field(graph: SERVICIOS)
+
+  servicios: [Servicio!]! @join__field(graph: SERVICIOS)
+
+  """Obtiene servicios Favoritos."""
+  serviciosFavoritos(idVendedor: ID!): [ServicioFavorito!]! @join__field(graph: SERVICIOS)
+
+  serviciosRedes(red: Red!): [ServicioRed]! @join__field(graph: SERVICIOS)
+
+  """Términos y condiciones de BOMO."""
+  terminosCondiciones: Parametro! @join__field(graph: APP)
+
+  """Listado de tipos de documentos"""
+  tiposDocumentos: [TipoDocumento!]! @join__field(graph: APP)
+
+  ubicaciones(idPais: Int! = 1): Pais! @join__field(graph: APP)
+
+  """Comprueba si el codigo enviado es valido"""
+  validacionCodigoConfirmacion(
+    """Codigo de verificacion"""
+    codigo: Int!
+    dispositivo: DispositivoInput!
+
+    """Numero de telefono del dispositivo"""
+    telefono: PhoneNumber!
+  ): Boolean! @join__field(graph: APP)
+
+  """Query de verificacion del correo del vendedor."""
+  validarCorreoVendedor(id: ID!, token: String!): Boolean! 
+
+  """Query Verificacion de Numero de telefono."""
+  validarTelefonoVendedor(idVendedor: ID!, telefono: PhoneNumber!, token: String!): Boolean! 
+
+  """Obtiene el vendedor a partir de su identificador."""
+  vendedor(
+    """Identificador unico del vendedor."""
+    idVendedor: ID!
+  ): Vendedor! 
+
+  """Obtiene todos los vendedores."""
+  vendedores: [Vendedor!] 
+}
+
+type RangoNumerico {
+  maximo: Float
+  minimo: Float
+}
+
+type RecargaSaldo {
+  codigo: String!
+  descripcion: String!
+}
+
+enum Red {
+  """Red Aqui Pago"""
+  AP
+
+  """Red Pago Express"""
+  PE
+}
+
+input RegistrarToken {
+  documento: String!
+  idDestinatario: ID
+  idDispositivo: ID!
+  idProducto: ID!
+  token: String!
+}
+
+type Regla {
+  consulta: String!
+  fechaActualizacion: String
+  fechaInsercion: String!
+  idRegla: ID!
+  observacion: String!
+}
+
+input ReglaInput {
+  consulta: String!
+  idRegla: ID!
+  observacion: String!
+}
+
+type Respuesta {
+  exitoso: Boolean
+  mensaje: String!
+}
+
+enum Rol {
+  """Rol correspondiente al vendedor adicional"""
+  ADICIONAL
+
+  """Rol correspondiente al rol de supervisor."""
+  ADMINISTRADOR
+
+  """
+  Rol utilizado para la actualizacion de facturas desde Q-FLOW,
+  cierre mensual, diario, y otros.
+  """
+  API
+
+  """Rol que corresponde a cumplimiento."""
+  CUMPLIMIENTO
+
+  """Rol de Marketing para el manejo de notificaciones"""
+  MARKETING
+
+  """
+  Rol correspondiente a cumplimineto para la actualización
+  de datos del vendedor.
+  """
+  OPERADOR
+
+  """Rol de seguridad para el acceso al ABM de usuarios de backoffice."""
+  SEGURIDAD
+
+  """Rol momentáneo"""
+  SUPERVISOR
+
+  """Rol correspondiente al vendedor titular."""
+  TITULAR
+}
+
+type Servicio {
+  """Distribucion de la comision del servicio"""
+  comision: Comision
+
+  """Es un servicio marcado cmo diligencia ampliada"""
+  diligenciaAmpliada: Boolean!
+
+  """Estado KYC mínimo del servicio."""
+  estadoKYCminimo: String
+
+  """Facturador del servicio"""
+  facturador: Facturador!
+
+  """Fecha de actualizacion."""
+  fechaActualizacion: DateTime
+
+  """Fecha de inserción del servicio"""
+  fechaInsercion: DateTime!
+
+  """Inidica si el servicio está habilitado"""
+  habilitado: Boolean!
+
+  """Identificador del servicio"""
+  id: ID!
+
+  """Identificador original del servicio"""
+  idServicioRed: String!
+
+  """Nombre del servicio"""
+  nombre: String!
+
+  """Operador que realiza la insercion/edicion/delete del servicio."""
+  operador: Operador!
+
+  """Posicion del servicio"""
+  posicion: Int!
+
+  """Es servicio predefinido"""
+  predefinido: Boolean!
+
+  """Red a la que corresponde"""
+  red: Red!
+}
+
+type ServicioEspecial {
+  """Comentario opcional."""
+  comentario: String
+
+  """Fecha en que fue actualizado el servicio especial."""
+  fechaActualizacion: DateTime
+
+  """Fecha en que fue insertado el servicio especial."""
+  fechaInsercion: DateTime!
+
+  """Identificador unico del Servicio Especial"""
+  id: ID!
+
+  """Datos del Operador."""
+  operador: Operador!
+
+  """Posicion en que se va a mostrar el servicio."""
+  posicion: Int
+
+  """Datos del Servicio."""
+  servicio: Servicio!
+
+  """Indica el tipo de Servicio Especial."""
+  tipo: TipoEspecial!
+}
+
+type ServicioFavorito {
+  """Fecha en que fue insertado el servicio favorito."""
+  fechaInsercion: DateTime!
+
+  """Identificador unico del servicio favorito."""
+  id: ID!
+
+  """Datos del servicio relacionado."""
+  servicio: Servicio!
+
+  """Datos del vendedor relacionado."""
+  vendedor: Vendedor!
+}
+
+input ServicioInput {
+  """Indica si el servicio es del tipo diligencia ampliada."""
+  diligenciaAmpliada: Boolean = false
+
+  """Estado KYC minimo"""
+  estadoKYCminimo: EstadoKYC = BASICO
+
+  """Identificador Unico del Facturador."""
+  facturadorId: ID!
+
+  """Identificador unico del servicio-red"""
+  idServicioRed: ID!
+
+  """Nombre del servicio."""
+  nombre: String!
+
+  """Identificador unico del operador."""
+  operadorId: ID!
+
+  """Indica que el servicio es predefinido o no."""
+  predefinido: Boolean = false
+
+  """Identificador unico de la Red"""
+  red: Red!
+}
+
+type ServicioRed {
+  facturador: FacturadorEnServicio!
+  id: ID!
+  nombre: String!
+}
+
+enum Sexo {
+  FEMENINO
+  MASCULINO
+}
+
+type Telefono {
+  numero: PhoneNumber
+}
+
+union TelefonoCorreo = Correo | Telefono
+
+scalar Time
+
+enum TipoArchivo {
+  CEDULA
+  COMPROBANTE
+  CONSTANCIA
+  DECLARACION_IVA
+  FACTURA
+  INFORME_DETALLADO
+  PUBLIC
+  REIMPRESION
+  SELFIE
+}
+
+enum TipoContacto {
+  CORREO
+  TELEFONO
+}
+
+enum TipoDato {
+  BOOLEAN
+  NUMBER
+  STRING
+}
+
+type TipoDocumento {
+  abreviatura: String!
+  descripcion: String!
+  id: ID!
+}
+
+"""Tipos de documentos habilitados a operar"""
+enum TipoDocumentoHabilitado {
+  CI
+}
+
+enum TipoEntrada {
+  CHECKBOX
+  INPUT
+  SELECT
+}
+
+enum TipoEspecial {
+  DESTACADO
+  TRANSFERENCIA_WALLY
+}
+
+enum TipoFormato {
+  DATE
+  MONEY
+  NUMBER
+  TEXT
+}
+
+enum TipoImagen {
+  """Constancia de RUC."""
+  CONSTANCIA
+
+  """Declaracion IVA"""
+  DECLARACION_IVA
+
+  """Cedula de identidad dorso"""
+  DORSO
+
+  """Factura"""
+  FACTURA
+
+  """Cedula de identidad frente"""
+  FRENTE
+
+  """Informe detallado de canapi."""
+  INFORME_DETALLADO
+
+  """Selfie"""
+  SELFIE
+}
+
+enum TipoMoneda {
+  PYG
+}
+
+enum TipoMovimiento {
+  DIARIO
+  MENSUAL
+}
+
+enum TipoSistema {
+  APP
+  BACKOFFICE
+}
+
+enum TipoTransaccion {
+  BATCH
+  CONSULTA
+  PAGO
+}
+
+enum TipoVendedor {
+  ADICIONAL
+  TITULAR
+}
+
+"""Par de tokens JWT: Access y Refresh."""
+type Token {
+  """Token JWT transaccional de corta duración."""
+  access: JWT!
+
+  refresh: JWT!
+}
+
+"""
+A field whose value conforms to the standard URL format as specified in RFC3986: https://www.ietf.org/rfc/rfc3986.txt.
+"""
+scalar URL
+
+"""
+A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier.
+"""
+scalar UUID
+
+interface Validacion {
+  descripcion: String!
+  resultado: Boolean!
+}
+
+type ValidacionBilleteraWally implements Validacion {
+  """Descripcion de la billetera"""
+  descripcion: String!
+
+  """Datos de la billetera recibidos desde la api."""
+  extensiones: JSON!
+
+  """Nombre y apellido del titular de la billetera."""
+  nombreTitularBilletera: String!
+
+  """Nro de la billetera"""
+  nroBilletera: PhoneNumber!
+
+  """Nro de documento del titular."""
+  nroDocumento: String!
+
+  """TRUE en caso de que exista una billetera."""
+  resultado: Boolean!
+}
+
+type ValidacionCodigo implements Validacion {
+  descripcion: String!
+  resultado: Boolean!
+}
+
+type ValidacionPersona implements Validacion {
+  descripcion: String!
+  resultado: Boolean!
+}
+
+type Vendedor {
+  """Tipo de actividad economica."""
+  actividad: ActividadEconomica!
+
+  """Vendedores adicionales"""
+  adicionales: [Vendedor!]!
+
+  """Apellido"""
+  apellidos: String!
+
+  """Billeteras asociadas al vendedor."""
+  billeteras: [Billetera!]!
+
+  """Boca correspondiente al vendedor"""
+  boca: String
+
+  """Movimientos correspondientes a la carga de saldo"""
+  cargas: [Movimiento!]!
+
+  """Comisiones asociadas al vednedor."""
+  comisiones: [Movimiento!]!
+
+  """Contactos"""
+  contactos: [Contacto!]!
+
+  """Dirección particular"""
+  direccionParticular: String!
+
+  """Dispositivos asociados al vendedor."""
+  dispositivos: [Dispositivo!]!
+
+  """Estado actual de la cuenta del vendedor."""
+  estadoCuenta: EstadoCuenta!
+
+  """Estado KYC del vendedor."""
+  estadoKYC: String!
+
+  """Facturas asociadas al vendedor."""
+  facturas: [Factura!]!
+
+  """Fecha de actualización"""
+  fechaActualizacion: DateTime
+
+  """Fecha de inserción"""
+  fechaInsercion: DateTime!
+
+  """Fecha de nacimiento"""
+  fechaNacimiento: Date!
+
+  """Fecha de vencimiento del documento de identidad"""
+  fechaVencimientoDocumento: Date!
+
+  """Identificador único"""
+  id: ID!
+
+  """Imagenes asociadas al vendedor."""
+  imagenes: [Imagen!]!
+
+  """Modificaciones realizadas sobre el vendedor."""
+  modificaciones: [ModificacionVendedor!]!
+
+  """Modificaciones de datos en las cuentas del vendedor."""
+  modificacionesCuenta: [ModificacionCuenta!]!
+
+  """Modificaciones de estado KYC al vendedor."""
+  modificacionesKYC: [ModificacionKYC!]!
+
+  """Nombre"""
+  nombres: String!
+
+  """Número de documento"""
+  nroDocumento: String!
+
+  """Operador"""
+  operador: Operador
+
+  """País de nacimiento"""
+  paisNacimiento: Pais!
+
+  """Indica si el vendedor es una persona expuesta políticamente."""
+  pep: Boolean!
+
+  """Indica si el vendedor ya presentó su constancia de factura."""
+  presentoConstancia: Boolean!
+
+  """Presento constancia de IVA."""
+  presentoIva: Boolean!
+
+  """Receptora asignada al vendedor."""
+  receptora: String
+
+  """Indica si el vendedor quiere recibir copia de comprobante."""
+  recibirCopiaComprobante: Boolean!
+
+  """RUC"""
+  ruc: String!
+
+  """Define si es Titular o Vendedor."""
+  tipo: TipoVendedor!
+
+  """Identificador del tipo de documento."""
+  tipoDocumento: TipoDocumento!
+
+  """Movimientos correspondientes a transferencias a Wally"""
+  transferencias: [Movimiento!]!
+
+  """Ciudad donde esta ubicado."""
+  ubicacion: Ciudad!
+
+  """Ventas asociadas al vendedor."""
+  ventas: [Movimiento!]!
+}
+
+# Prueba agregar types faltantes
+input DispositivoInput {
+  id: String
+}
+
+type JSON {
+  id: String
+}
+
+type JWT {
+  id: String
+}
+
+input HabilitarOperador {
+  id: String
+}
+
+input CategoriaInput{
+  id: String
+}
+
+input ContenidoInput {
+  id: String
+}
+
+input FacturadorInput {
+  id: String
+}
+
+input ComisionInput {
+  id: String
+}
+
+input ModificarContenidoInput {
+  id: String
+}
+
+type EstadoDeclaracion {
+  id : String
+}
+
+input EstadoCuentaInput {
+  id: String
+}
+
+type CuentaVendedor {
+  id: String
+}
+
+input EstadoKYCInput {
+  id: String
+}
+
+type KYCVendedor{
+  id: String
+}

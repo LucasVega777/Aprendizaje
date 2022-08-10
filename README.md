@@ -2,6 +2,7 @@
 Documentación de conceptos aprendidos:
 
 * [Apache Kafka](/docs/kafka.md)
+* [Apache Kafka Connect](/docs/kafka-connect.md)
 * [NodeJS](/docs/nodejs.md)
 
 # Autor:
